@@ -31,7 +31,23 @@ app.post('/info', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.send('Kanga Info');
 }));
 app.post('/kanga/addLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield kanga.getInfo(req, res);
+    const account_from = {
+        privateKey: process.env.PRIVATE_KEY || '',
+    };
+    console.log("account_from.privateKey: ", account_from.privateKey);
+    console.log("process.env.HMY_NODE_URL: ", process.env.HMY_NODE_URL);
+    const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HMY_NODE_URL);
+    let wallet = new ethers_1.ethers.Wallet(account_from.privateKey, provider);
+    let tokenA = req.body.tokenA || "";
+    let tokenB = req.body.tokenB || "";
+    let amountADesired = req.body.amountADesired || "0";
+    let amountBDesired = req.body.amountBDesired || "0";
+    let amountAMin = req.body.amountAMin || "0";
+    let amountBMin = req.body.amountBMin || "0";
+    let sendTo = req.body.to || "";
+    let deadline = Date.now() + 1000 * 60 * 3;
+    let result = yield kanga.addLiquidity(req, res);
+    let response = kanga.addLiquidity(provider, wallet, tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, sendTo, deadline);
     res.send('Kanga Add Liquidity');
 }));
 app.post('/kanga/withdrawLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -77,9 +93,9 @@ app.get('/test/kanga/swap', (req, res) => {
 app.get('/test/kanga/balance', (req, res) => {
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HARMONY_NODE_URL);
     const account_from = {
-        privateKey: process.env.PRIVATE_KEY,
+        privateKey: process.env.PRIVATE_KEY || "",
     };
-    let wallet = new ethers_1.ethers.Wallet('ca5073a6e8dbd0b86ba192262c801f97561aa0d81398f7886219ee6feb21c80a', provider);
+    let wallet = new ethers_1.ethers.Wallet(account_from.privateKey, provider);
     const fromToken = '0xc4860463c59d59a9afac9fde35dff9da363e8425';
     kanga.checkBalance(wallet, fromToken, "1");
     res.send('Test Balance');

@@ -14,7 +14,10 @@ module.exports.getRouterContract = function(
     chainId,
     walletOrProvider
   ) {
+    console.log('chainId: ', chainId);
+    //console.log('walletOrProvider: ',walletOrProvider)
     const routerAddress = ROUTER_ADDRESS[chainId]
+    console.log('routerAddress: ',routerAddress)
     //if (routerAddress && isAddress(routerAddress)) {
     if (routerAddress) {
       return new ethers.Contract(routerAddress, ROUTER_ABI, walletOrProvider)
