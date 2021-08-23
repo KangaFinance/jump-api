@@ -1,0 +1,10 @@
+.DS_Store
+*/.DS_Store
+*/build/
+*/.env
+.env
+*/node_modules
+/old_contracts
+*/dist
+
+node_modules
