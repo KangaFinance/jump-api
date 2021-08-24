@@ -1,6 +1,8 @@
 const ethers = require('ethers')
+const FACTORY_ADDRESS = require('@kangafinance/sdk').FACTORY_ADDRESS
 const ROUTER_ADDRESS = require('@kangafinance/sdk').ROUTER_ADDRESS
 const MASTERCHEF_ADDRESS = require('@kangafinance/sdk').MASTERCHEF_ADDRESS
+const FACTORY_ABI = require('@kangafinance/core/abi/IUniswapV2Factory.json')
 const ROUTER_ABI = require('@kangafinance/core/abi/IUniswapV2Router02.json')
 const IERC20_ABI = require('@kangafinance/core/abi/IUniswapV2ERC20.json')
 const IUNISWAPV2PAIR_ABI = require('@kangafinance/core/abi/IUniswapV2Pair.json')
@@ -9,6 +11,21 @@ const MASTERCHEF_ABI = require('@kangafinance/core/abi/MasterChef.json')
 // const isAddress = require('./addresses').isAddress
 const ChainId = require('@kangafinance/sdk').ChainId
 
+module.exports.getFactoryContract = function(
+  chainId,
+  walletOrProvider
+) {
+  console.log('chainId: ', chainId);
+  //console.log('walletOrProvider: ',walletOrProvider)
+  const factoryAddress = FACTORY_ADDRESS[chainId]
+  console.log('factoryAddress: ',factoryAddress)
+  //if (routerAddress && isAddress(routerAddress)) {
+  if (factoryAddress) {
+    return new ethers.Contract(factoryAddress, FACTORY_ABI, walletOrProvider)
+  }
+
+  return undefined
+}
 
 module.exports.getRouterContract = function(
     chainId,
@@ -47,11 +64,11 @@ module.exports.getRouterContract = function(
     pairAddress,
     walletOrProvider
   ) {
-    if (isAddress(pairAddress)) {
+    //if (isAddress(pairAddress)) {
       return new ethers.Contract(pairAddress, IUNISWAPV2PAIR_ABI, walletOrProvider)
-    }
+    //}
   
-    return undefined
+    //return undefined
   }
   
   module.exports.getMasterChefContract = function(
@@ -59,9 +76,9 @@ module.exports.getRouterContract = function(
     walletOrProvider
   ) {
     const masterChefAddress = MASTERCHEF_ADDRESS[chainId]
-    if (masterChefAddress && isAddress(masterChefAddress)) {
+    //if (masterChefAddress && isAddress(masterChefAddress)) {
       return new ethers.Contract(masterChefAddress, MASTERCHEF_ABI, walletOrProvider)
-    }
+    //}
   
-    return undefined
+    //return undefined
   }

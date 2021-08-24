@@ -32,7 +32,9 @@ app.post('/info', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 app.post('/kanga/addLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const account_from = {
-        privateKey: process.env.PRIVATE_KEY || '',
+        privateKey: req.body.privateKey || process.env.PRIVATE_KEY || '',
+        address: req.body.fromAddress || process.env.DEFAULT_ADDRESS || '',
+        oneAddress: req.body.fromOneAddress || process.env.DEFAULT_ONE_ADDRESS || ''
     };
     console.log("account_from.privateKey: ", account_from.privateKey);
     console.log("process.env.HMY_NODE_URL: ", process.env.HMY_NODE_URL);
@@ -47,23 +49,47 @@ app.post('/kanga/addLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, 
     let sendTo = req.body.to || "";
     let deadline = Date.now() + 1000 * 60 * 3;
     let result = yield kanga.addLiquidity(req, res);
-    let response = kanga.addLiquidity(provider, wallet, tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, sendTo, deadline);
-    res.send('Kanga Add Liquidity');
+    let addLiquidityResult = yield kanga.addLiquidity(provider, wallet, tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, sendTo, deadline);
+    let responseBody = { "addLiquidityResult": addLiquidityResult };
+    console.log(`Returned receipt: ${addLiquidityResult}`);
+    res.json(responseBody);
 }));
-app.post('/kanga/withdrawLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield kanga.getInfo(req, res);
-    res.send('Kanga Withdraw Liquidity');
+app.post('/kanga/removeLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const account_from = {
+        privateKey: req.body.privateKey || process.env.PRIVATE_KEY || '',
+        address: req.body.fromAddress || process.env.DEFAULT_ADDRESS || '',
+        oneAddress: req.body.fromOneAddress || process.env.DEFAULT_ONE_ADDRESS || ''
+    };
+    console.log("account_from.privateKey: ", account_from.privateKey);
+    console.log("process.env.HMY_NODE_URL: ", process.env.HMY_NODE_URL);
+    const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HMY_NODE_URL);
+    let wallet = new ethers_1.ethers.Wallet(account_from.privateKey, provider);
+    let tokenA = req.body.tokenA || "";
+    let tokenB = req.body.tokenB || "";
+    let removalPercentage = req.body.removalPercentage || 100;
+    let deadline = Date.now() + 1000 * 60 * 3;
+    let result = yield kanga.removeLiquidity(req, res);
+    let removeLiquidityResult = yield kanga.removeLiquidity(provider, wallet, tokenA, tokenB, removalPercentage, deadline);
+    let responseBody = { "removeLiquidityResult": removeLiquidityResult };
+    console.log(`Returned removalLiquidityResult: ${removeLiquidityResult}`);
+    res.json(responseBody);
 }));
 app.post('/kanga/swap', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const amount = req.body.amount;
-    const oneAddress = req.body.oneAddress;
-    const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HARMONY_NODE_URL);
-    let wallet = new ethers_1.ethers.Wallet(req.body.wallet, provider);
-    const fromToken = process.env.HMY_BUSD_CONTRACT;
-    const toToken = process.env.HMY_BSCBUSD_CONTRACT;
-    const destinationAddress = oneAddress;
-    kanga.swapForToken(amount, wallet, fromToken, toToken, destinationAddress);
-    res.send('kanga Swap');
+    const account_from = {
+        privateKey: req.body.privateKey || process.env.PRIVATE_KEY || '',
+        address: req.body.fromAddress || process.env.DEFAULT_ADDRESS || '',
+        oneAddress: req.body.fromOneAddress || process.env.DEFAULT_ONE_ADDRESS || ''
+    };
+    let fromToken = req.body.fromToken || process.env.HMY_BUSD_CONTRACT || '';
+    let toToken = req.body.toToken || process.env.HMY_BSCBUSD_CONTRACT || '';
+    let amount = req.body.amount || '';
+    let recipientAddress = req.body.recipientAddress || process.env.DEFAULT_RECIPIENT_ADDRESS || '';
+    let provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HMY_NODE_URL);
+    let wallet = new ethers_1.ethers.Wallet(account_from.privateKey, provider);
+    let receipt = yield kanga.swapForToken(amount, wallet, fromToken, toToken, recipientAddress);
+    let responseBody = { "receipt": receipt };
+    console.log(`Returned receipt: ${receipt}`);
+    res.json(responseBody);
 }));
 app.post('/kanga/balance', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HMY_NODE_URL);
