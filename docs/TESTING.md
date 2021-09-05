@@ -20,7 +20,7 @@
         - one13p6lc2j8uddv69uyhd043atrml5x4pz360ekxr
 - Links
     - [Harmony Faucet](https://faucet.pops.one/)
-    - [Harmony Explorer](https://www.notion.so/47e35acd1784bb5f58f563dfe86a8451)
+    - [Harmony Explorer](https://explorer.pops.one/)
     - [Harmony Bridge](https://testnet.bridge.hmny.io/erc20)
     - [Binance Faucet](https://testnet.binance.org/faucet-smart)
     - [BSC Node URLs](https://docs.binance.org/smart-chain/developer/rpc.html)
