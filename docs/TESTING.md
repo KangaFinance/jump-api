@@ -1,5 +1,12 @@
 # Testing
 
+[Kanga.finance](https://kanga.finance) can be tested on Harmony Testnet using 
+[https://demo.kanga.finance](https://demo.kanga.finance)
+
+Below is an overview of the tokens and liquidity pools that are available for testing.
+
+If you wish to receive tokens for testing please reach out in the Harmony Hackathon discord channel.
+
 ## Harmony Testnet
 
 - Tokens
