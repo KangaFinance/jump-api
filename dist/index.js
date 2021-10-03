@@ -16,9 +16,12 @@ const express_1 = __importDefault(require("express"));
 const ethers_1 = require("ethers");
 require('dotenv').config();
 const app = express_1.default();
+const math = require('mathjs');
+const parseEther = require('ethers').utils.parseEther;
 app.use(express_1.default.json());
 var cors = require('cors');
-var kanga = require('../src/kanga.js');
+var kanga = require('../src/liquidity/kanga.js');
+var bridge = require('../src/bridge/bridge.js');
 app.use(cors({ origin: true, credentials: true }));
 app.get('/', (req, res) => {
     res.send('Hello World!');
@@ -30,7 +33,7 @@ app.post('/info', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield kanga.getInfo(req, res);
     res.send('Kanga Info');
 }));
-app.post('/kanga/addLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/addLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const account_from = {
         privateKey: req.body.privateKey || process.env.PRIVATE_KEY || '',
         address: req.body.fromAddress || process.env.DEFAULT_ADDRESS || '',
@@ -54,7 +57,7 @@ app.post('/kanga/addLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, 
     console.log(`Returned receipt: ${addLiquidityResult}`);
     res.json(responseBody);
 }));
-app.post('/kanga/removeLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/removeLiquidity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const account_from = {
         privateKey: req.body.privateKey || process.env.PRIVATE_KEY || '',
         address: req.body.fromAddress || process.env.DEFAULT_ADDRESS || '',
@@ -74,14 +77,14 @@ app.post('/kanga/removeLiquidity', (req, res) => __awaiter(void 0, void 0, void 
     console.log(`Returned removalLiquidityResult: ${removeLiquidityResult}`);
     res.json(responseBody);
 }));
-app.post('/kanga/swap', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/swap', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const account_from = {
         privateKey: req.body.privateKey || process.env.PRIVATE_KEY || '',
         address: req.body.fromAddress || process.env.DEFAULT_ADDRESS || '',
         oneAddress: req.body.fromOneAddress || process.env.DEFAULT_ONE_ADDRESS || ''
     };
     let fromToken = req.body.fromToken || process.env.HMY_BUSD_CONTRACT || '';
-    let toToken = req.body.toToken || process.env.HMY_BSCBUSD_CONTRACT || '';
+    let toToken = req.body.toToken || process.env.HMY_bscBUSD_CONTRACT || '';
     let amount = req.body.amount || '';
     let recipientAddress = req.body.recipientAddress || process.env.DEFAULT_RECIPIENT_ADDRESS || '';
     let provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HMY_NODE_URL);
@@ -91,7 +94,7 @@ app.post('/kanga/swap', (req, res) => __awaiter(void 0, void 0, void 0, function
     console.log(`Returned receipt: ${receipt}`);
     res.json(responseBody);
 }));
-app.post('/kanga/balance', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/balance', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HMY_NODE_URL);
     const account_from = {
         privateKey: process.env.PRIVATE_KEY || '',
@@ -104,28 +107,48 @@ app.post('/kanga/balance', (req, res) => __awaiter(void 0, void 0, void 0, funct
     let responseBody = { "tokenBalance": tokenBalance };
     res.json(responseBody);
 }));
-app.get('/test/kanga/swap', (req, res) => {
-    const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HARMONY_NODE_URL);
-    const account_from = {
-        privateKey: process.env.PRIVATE_KEY || '',
-    };
-    let wallet = new ethers_1.ethers.Wallet(account_from.privateKey, provider);
-    const fromToken = '0xc4860463c59d59a9afac9fde35dff9da363e8425';
-    const toToken = '0x6d307636323688cc3fe618ccba695efc7a94f813';
-    const destinationAddress = '0x9E1AD78422Fd571B26D93EeB895f631A67Cd5462';
-    kanga.swapForToken("1", wallet, fromToken, toToken, destinationAddress);
-    res.send('Test Kanga Swap');
-});
-app.get('/test/kanga/balance', (req, res) => {
-    const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HARMONY_NODE_URL);
-    const account_from = {
-        privateKey: process.env.PRIVATE_KEY || "",
-    };
-    let wallet = new ethers_1.ethers.Wallet(account_from.privateKey, provider);
-    const fromToken = '0xc4860463c59d59a9afac9fde35dff9da363e8425';
-    kanga.checkBalance(wallet, fromToken, "1");
-    res.send('Test Balance');
-});
+app.post('/flash', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const jumperAddress = req.body.jumperAddress || process.env.JUMPER_ADDRESS;
+    const amount = req.body.amount || process.env.FLASH_AMOUNT;
+    const privateKey = req.body.privateKey || process.env.PRIVATE_KEY;
+    const lockResult = yield bridge.Bridge(0, jumperAddress, process.env.ETH_NODE_URL, process.env.ETH_GAS_LIMIT, '../constants/abi/BUSD.json', process.env.ETH_BUSD_CONTRACT, '../constants/abi/BUSDEthManager.json', process.env.ETH_BUSD_MANAGER_CONTRACT, privateKey, amount);
+    if (lockResult.success == true) {
+        console.log("Assets Successfully Bridged, swapping bridged assets");
+        const provider = new ethers_1.ethers.providers.JsonRpcProvider(process.env.HMY_NODE_URL);
+        let wallet = new ethers_1.ethers.Wallet(privateKey, provider);
+        const fromToken = process.env.HMY_BUSD_CONTRACT;
+        const toToken = process.env.HMY_bscBUSD_CONTRACT;
+        const destinationAddress = jumperAddress;
+        yield kanga.checkBalance(wallet, fromToken, amount).then((fromTokenBalanceHex) => __awaiter(void 0, void 0, void 0, function* () {
+            console.log(`From Token CheckBalance Result: ${JSON.stringify(fromTokenBalanceHex)}`);
+            console.log(`amount._hex: ${JSON.stringify(parseEther(amount)._hex)}`);
+            if (math.compare(parseEther(amount)._hex, fromTokenBalanceHex)) {
+                const swapResult = yield kanga.swapForToken(amount, wallet, fromToken, toToken, destinationAddress);
+                console.log(`swapResult: ${JSON.stringify(swapResult)}`);
+                if (swapResult.success == true) {
+                    yield kanga.checkBalance(wallet, toToken, amount).then((toTokenBalanceHex) => __awaiter(void 0, void 0, void 0, function* () {
+                        console.log(`To Token CheckBalance Result: ${JSON.stringify(toTokenBalanceHex)}`);
+                        if (toTokenBalanceHex != '') {
+                            yield bridge.Bridge(1, jumperAddress, process.env.HMY_NODE_URL, process.env.HMY_GAS_LIMIT, '../constants/abi/BUSD.json', process.env.HMY_bscBUSD_CONTRACT, '../constants/abi/BridgeManager.json', process.env.HMY_bscBUSD_MANAGER_CONTRACT, privateKey, amount);
+                        }
+                        else {
+                            res.send(swapResult);
+                        }
+                    }));
+                }
+                res.send({ trx: "kanga", success: true });
+            }
+            else {
+                console.log(`CheckBalance Result not True: ${JSON.stringify(fromTokenBalanceHex)}`);
+                res.send(fromTokenBalanceHex);
+            }
+        }));
+    }
+    else {
+        console.log("Assets Bridging Failed");
+        res.send(lockResult);
+    }
+}));
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`App listening on PORT ${port}`));
 //# sourceMappingURL=index.js.map

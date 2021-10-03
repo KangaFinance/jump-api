@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const ChainId = require('@kangafinance/sdk').ChainId
 const ethers = require('ethers')
 const formatEther = require('ethers').utils.formatEther
@@ -111,7 +113,7 @@ module.exports.getInfo = async function(chain) {
         sendTo,
         deadline,
         {
-          gasLimit: 50000000
+          gasLimit: process.env.HMY_GAS_LIMIT
         }
       );
       const receipt = await tx.wait()
@@ -194,7 +196,7 @@ const removeLiquidity = async function(
       wallet.address,
       deadline,
       {
-        gasLimit: 50000000
+        gasLimit: process.env.HMY_GAS_LIMIT
       }
     );
     const receipt = await tx.wait()
@@ -277,7 +279,7 @@ const removeLiquidity = async function(
               destinationAddress,
               deadline,
               {
-                gasLimit: 50000000
+                gasLimit: process.env.HMY_GAS_LIMIT
               }
             )
       
@@ -286,16 +288,20 @@ const removeLiquidity = async function(
             console.log(
               `Swapped ${message} - Transaction receipt - tx hash: ${receipt.transactionHash}, success: ${success}\n`
             )
-            return receipt.transactionHash
+            return { trx: "swap", success: true, message: `Swapped ${message} - Transaction receipt - tx hash: ${receipt.transactionHash}, success: ${success}`}
+            // return receipt.transactionHash
         } else {
-          console.log('Not swapping due to running in dry run mode')
+          return { trx: "swap", success: true, message: 'Not swapping due to running in dry run mode', error_body: "Only possible values are 0 or 1"}
+          // console.log('Not swapping due to running in dry run mode')
           }
         }
       } catch (e) {
-        console.error("Error: ", e.message, e);
+        return { trx: "swap", success: false, error_message: e.message, error_body: e.response?.body}
+        // console.error("Error: ", e.message, e);
       }
     } else {
-      console.log(`Couldn't find fromToken ${fromToken} or toToken ${toToken}`)
+      return { trx: "swap", success: false, error_message: `Couldn't swap fromToken ${fromToken} or toToken ${toToken}`, error_body: null}
+      // console.log(`Couldn't find fromToken ${fromToken} or toToken ${toToken}`)
     }
   }
 

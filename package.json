@@ -30,7 +30,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@kangafinance/sdk": "^0.0.3",
+    "@kangafinance/core": "^0.0.25",
+    "@kangafinance/sdk": "^0.0.29",
+    "bridge-sdk": "^2.13.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "eip-712": "^0.4.3",
