@@ -130,10 +130,10 @@ const burn = async (depositTxnHash, approveTxnHash, burnTxnHash, jumperAddress, 
     
     const bridgeSDK = new BridgeSDK({ logLevel: 2 })
     await bridgeSDK.init(configs.testnet)
-    bridgeSDK.addOneWallet(process.env.PRIVATE_KEY);
+    // bridgeSDK.addOneWallet(process.env.PRIVATE_KEY);
     console.log(`Bridge Initialized for Testnet`)
     formattedAmount = amount/1e18
-    formattedAmount = 0.25
+    // formattedAmount = 0.25
     jumperOneAddress = process.env.JUMPER_ONE_ADDRESS 
 
     // bridgeSDK.addOneWallet(process.env.PRIVATE_KEY);
@@ -163,49 +163,6 @@ const burn = async (depositTxnHash, approveTxnHash, burnTxnHash, jumperAddress, 
     })
     console.log(`bridgeSDK Operation Created`)
 
-  /*
-    await operation.sdk.hmyClient.hmyMethodsDeposit.deposit(
-      operation.operation.actions[0].depositAmount,
-      async transactionHash => {
-        console.log('Deposit hash: ', transactionHash);
-
-        await operation.confirmAction({
-          actionType: ACTION_TYPE.depositOne,
-          transactionHash,
-        });
-      }
-    );
-    console.log(`depositbscBUSD Completed`)
-
-    await operation.waitActionComplete(ACTION_TYPE.depositOne);
-    console.log(`depositOne Completed`)
-
-    await operation.sdk.hmyClient.hmyMethodsBUSD.approveHmyManger(amount, async transactionHash => {
-      console.log('Approve hash: ', transactionHash);
-
-      await operation.confirmAction({
-        actionType: ACTION_TYPE.approveHmyManger,
-        transactionHash,
-      });
-    });
-
-    await operation.waitActionComplete(ACTION_TYPE.approveHmyManger);
-    console.log("Hmy Manager Approved")
-
-    await operation.sdk.hmyClient.hmyMethodsERC20.burnToken(
-      ethAddress,
-      amount,
-      async transactionHash => {
-        console.log('burnToken hash: ', transactionHash);
-
-        await operation.confirmAction({
-          actionType: ACTION_TYPE.burnToken,
-          transactionHash,
-        });
-      }
-    );
-    console.log("Burn Token Completed")
-*/
     console.log(`Operation Created`)
     await operation.confirmAction({
       actionType: ACTION_TYPE.depositOne,

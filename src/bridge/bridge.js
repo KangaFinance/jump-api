@@ -74,7 +74,7 @@ async function approveContractManager(nodeURL, gasLimit, abiJson, contractAddres
 async function bridge(trx, jumperAddress, nodeURL, gasLimit, contractAbiJson, contractAddress, contractManagerAbiJson, contractManagerAddress, privateKey, amount) {
   try {
     let formattedAmount = parseEther(amount)
-    let depositFormattedAmount = parseEther(process.env.DEPOSIT_AMOUNT) 
+    // let depositFormattedAmount = parseEther(process.env.DEPOSIT_AMOUNT) 
     console.log("NodeURL:", nodeURL)
     console.log("Gas Limit:", gasLimit)
     console.log("Token ABI:", contractAbiJson)
@@ -84,7 +84,7 @@ async function bridge(trx, jumperAddress, nodeURL, gasLimit, contractAbiJson, co
     console.log("Amount:", amount)
     console.log("Amount in Wei:", formattedAmount)
     console.log("Deposit Amount:", process.env.DEPOSIT_AMOUNT)
-    console.log("Deposit Amount in Wei:", depositFormattedAmount)
+    // console.log("Deposit Amount in Wei:", depositFormattedAmount)
     // ===== Approve Contract Manager ===== //
     const approveTxn = await approveContractManager(nodeURL, gasLimit, contractAbiJson, contractAddress, contractManagerAddress, privateKey, formattedAmount);
     const approveTxnHash = approveTxn.hash
@@ -99,7 +99,7 @@ async function bridge(trx, jumperAddress, nodeURL, gasLimit, contractAbiJson, co
         break;
       case 1: // Burn
       console.log("Trx:", "Burn it!") 
-        const depositTxnHash = await burn.Deposit(nodeURL, gasLimit, '../constants/abi/Deposit.json', privateKey, depositFormattedAmount);
+        const depositTxnHash = await burn.Deposit(nodeURL, gasLimit, '../constants/abi/Deposit.json', privateKey, formattedAmount);
         console.log("depositTxnHash", depositTxnHash);
         const burnTxnHash = await burn.BurnTxn(nodeURL, gasLimit, contractManagerAbiJson, contractManagerAddress, privateKey, formattedAmount);
         console.log("burnTxnHash", burnTxnHash);
