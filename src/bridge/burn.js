@@ -7,6 +7,33 @@ const ethers = require('ethers');
 const formatEther = require('ethers').utils.formatEther
 const parseEther = require('ethers').utils.parseEther
 
+//TODO
+/*
+This needs refactoring currently are doing deposits and approvals in multiple places
+Reference sdk examples
+operations - https://github.com/harmony-one/ethhmy-bridge.sdk/blob/main/src/operations/index.ts
+examples - https://github.com/harmony-one/ethhmy-bridge.sdk/blob/main/examples/version_2/one_to_eth-node-full.js
+
+We are using 
+type: EXCHANGE_MODE.ONE_TO_ETH, //We are sending from Harmony to EVM Network
+token: TOKEN.ERC20, //We are sending a ERC2O (BUSD is not supported on BINANCE) and as this token was bridged from Binance we use ERC20 if it was bridged from Ethereum it would be HRC20
+erc20Address: process.env.BSC_BUSD_CONTRACT, //The ERC20 Contract on Binance
+network: NETWORK_TYPE.BINANCE, //We are sending to Binance
+
+Helper Methods
+We are using oneToEthERC20 https://github.com/harmony-one/ethhmy-bridge.sdk/blob/main/src/operations/oneToEthErc20.ts
+Which maps the HRC20 bscBUSD address to the BSC ERC20 addresses
+
+Steps required (To be confirmed)
+
+0) Create Operational Client
+1) Deposit 15 One
+2) Deposit BUSD Amount
+3) Approve Harmony Manger - ACTION_TYPE.approveHmyManger
+4) Burn Token - 
+
+*/
+
 /*
  * Exports for all public functions
 */
@@ -53,7 +80,7 @@ async function deposit(nodeURL, gasLimit, abiJson,  privateKey, depositAmountInW
   console.log(
     `depositTxn -  Transaction receipt - tx hash: ${receipt.transactionHash}, success: ${success}\n`
   )
-  return tx
+  return tx.hash
 }
 
 /* Signs a `burn` transaction and generates a hash
@@ -87,7 +114,7 @@ async function burnTxn(nodeURL, gasLimit, abiJson, contractManagerAddress, priva
   console.log(
     `burnTxn -  Transaction receipt - tx hash: ${receipt.transactionHash}, success: ${success}\n`
   )
-  return tx
+  return tx.hash
 }
 
 /* Bridges assets from Harmony to Ethereum or BSC networks
@@ -103,9 +130,10 @@ const burn = async (depositTxnHash, approveTxnHash, burnTxnHash, jumperAddress, 
     
     const bridgeSDK = new BridgeSDK({ logLevel: 2 })
     await bridgeSDK.init(configs.testnet)
+    bridgeSDK.addOneWallet(process.env.PRIVATE_KEY);
     console.log(`Bridge Initialized for Testnet`)
     formattedAmount = amount/1e18
-    formattedAmount = 2
+    formattedAmount = 0.25
     jumperOneAddress = process.env.JUMPER_ONE_ADDRESS 
 
     // bridgeSDK.addOneWallet(process.env.PRIVATE_KEY);
@@ -118,6 +146,9 @@ const burn = async (depositTxnHash, approveTxnHash, burnTxnHash, jumperAddress, 
     console.log(`jumperOneAddress: ${jumperOneAddress}`)
     console.log(`jumperAddress: ${jumperAddress}`)
     console.log(`depositTxnHash: ${JSON.stringify(depositTxnHash)}`)
+    // console.log(`depositTxnHash.hash: ${JSON.stringify(depositTxnHash.hash)}`)
+
+
 
     const operation = await bridgeSDK.createOperation({
       type: EXCHANGE_MODE.ONE_TO_ETH,
@@ -127,14 +158,56 @@ const burn = async (depositTxnHash, approveTxnHash, burnTxnHash, jumperAddress, 
       amount: formattedAmount,
       oneAddress: process.env.JUMPER_ONE_ADDRESS,
       ethAddress: jumperAddress,
-      // formattedAmount,
-      // jumperOneAddress,
-      // jumperAddress,
     })
+    console.log(`bridgeSDK Operation Created`)
+
+  /*
+    await operation.sdk.hmyClient.hmyMethodsDeposit.deposit(
+      operation.operation.actions[0].depositAmount,
+      async transactionHash => {
+        console.log('Deposit hash: ', transactionHash);
+
+        await operation.confirmAction({
+          actionType: ACTION_TYPE.depositOne,
+          transactionHash,
+        });
+      }
+    );
+    console.log(`depositbscBUSD Completed`)
+
+    await operation.waitActionComplete(ACTION_TYPE.depositOne);
+    console.log(`depositOne Completed`)
+
+    await operation.sdk.hmyClient.hmyMethodsBUSD.approveHmyManger(amount, async transactionHash => {
+      console.log('Approve hash: ', transactionHash);
+
+      await operation.confirmAction({
+        actionType: ACTION_TYPE.approveHmyManger,
+        transactionHash,
+      });
+    });
+
+    await operation.waitActionComplete(ACTION_TYPE.approveHmyManger);
+    console.log("Hmy Manager Approved")
+
+    await operation.sdk.hmyClient.hmyMethodsERC20.burnToken(
+      ethAddress,
+      amount,
+      async transactionHash => {
+        console.log('burnToken hash: ', transactionHash);
+
+        await operation.confirmAction({
+          actionType: ACTION_TYPE.burnToken,
+          transactionHash,
+        });
+      }
+    );
+    console.log("Burn Token Completed")
+*/
     console.log(`Operation Created`)
     await operation.confirmAction({
       actionType: ACTION_TYPE.depositOne,
-      transactionHash: depositTxnHash.hash,
+      transactionHash: depositTxnHash,
     })
     console.log(`depositOne Completed`)
     await operation.confirmAction({

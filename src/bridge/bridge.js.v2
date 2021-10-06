@@ -86,8 +86,7 @@ async function bridge(trx, jumperAddress, nodeURL, gasLimit, contractAbiJson, co
     console.log("Deposit Amount:", process.env.DEPOSIT_AMOUNT)
     console.log("Deposit Amount in Wei:", depositFormattedAmount)
     // ===== Approve Contract Manager ===== //
-    const approveTxn = await approveContractManager(nodeURL, gasLimit, contractAbiJson, contractAddress, contractManagerAddress, privateKey, formattedAmount);
-    const approveTxnHash = approveTxn.hash
+    const approveTxnHash = await approveContractManager(nodeURL, gasLimit, contractAbiJson, contractAddress, contractManagerAddress, privateKey, formattedAmount);
     console.log("approveTxnHash", approveTxnHash);
 
     switch (trx) {
@@ -99,11 +98,8 @@ async function bridge(trx, jumperAddress, nodeURL, gasLimit, contractAbiJson, co
         break;
       case 1: // Burn
       console.log("Trx:", "Burn it!") 
-        const depositTxnHash = await burn.Deposit(nodeURL, gasLimit, '../constants/abi/Deposit.json', privateKey, depositFormattedAmount);
-        console.log("depositTxnHash", depositTxnHash);
-        const burnTxnHash = await burn.BurnTxn(nodeURL, gasLimit, contractManagerAbiJson, contractManagerAddress, privateKey, formattedAmount);
+        const burnTxnHash = await burn.Burn(amount, jumperAddress);
         console.log("burnTxnHash", burnTxnHash);
-        await burn.Burn(depositTxnHash, approveTxnHash, burnTxnHash, jumperAddress, formattedAmount);
         break;
       default:
         return { trx: "bridge", success: false, error_message: "Wrong transaction value", error_body: "Only possible values are 0 or 1"}
