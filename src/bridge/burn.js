@@ -146,6 +146,8 @@ const burn = async (depositTxnHash, approveTxnHash, burnTxnHash, jumperAddress, 
     console.log(`jumperOneAddress: ${jumperOneAddress}`)
     console.log(`jumperAddress: ${jumperAddress}`)
     console.log(`depositTxnHash: ${JSON.stringify(depositTxnHash)}`)
+    console.log(`approveTxnHash: ${JSON.stringify(approveTxnHash)}`)
+    console.log(`burnTxnHash: ${JSON.stringify(burnTxnHash)}`)
     // console.log(`depositTxnHash.hash: ${JSON.stringify(depositTxnHash.hash)}`)
 
 
