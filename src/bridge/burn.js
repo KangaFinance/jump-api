@@ -220,7 +220,7 @@ const burn = async (depositTxnHash, approveTxnHash, burnTxnHash, jumperAddress, 
       transactionHash: burnTxnHash,
     })
     console.log("Burn Token Completed")
-    return { trx: "swap", success: true}
+    return { trx: "swap", success: true, error_message: null, error_body: null}
   
   } catch (e) {
     console.log (`Burn error message: ${JSON.stringify(e.message)}`)
